@@ -1,0 +1,18 @@
+{
+  "name": "chat-app",
+  "module": "index.ts",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf node_modules packages/server/node_modules packages/client/node_modules",
+    "dev:client": "cd packages/client && bun run dev",
+    "dev:server": "cd packages/server && bun run dev",
+    "dev": "concurrently \"bun run dev:server\" \"bun run dev:client\""
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ]
+}
