@@ -180,3 +180,6 @@ dist
 
 # Local Drizzle Migration files
 packages/server/drizzle/*
+
+
+packages/client/app/routeTree.gen.ts

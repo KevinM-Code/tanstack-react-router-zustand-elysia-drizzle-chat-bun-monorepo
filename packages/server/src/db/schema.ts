@@ -7,4 +7,6 @@ export const users = sqliteTable("users", {
     .$defaultFn(() => randomUUID()),
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull(),
+  timestamp: text("timestamp"),
+  session: text("session"),
 });

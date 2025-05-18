@@ -2,6 +2,8 @@ import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import bearer from "@elysiajs/bearer";
 import db from "./db";
+//import cookie from '@elysiajs/cookie'
+
 
 export default () => {
   return new Elysia({ name: "auth" })
@@ -9,11 +11,11 @@ export default () => {
       jwt({
         name: "jwt",
         secret: Bun.env.JWT_SECRET || "secret", // TODO: type-check env
-        schema: t.Object({
-          name: t.String(),
-          id: t.String(),
-        }),
-        exp: "1w",
+        // schema: t.Object({
+        //   name: t.String(),
+        //   id: t.String(),
+        // }),
+        exp: "5m",
       }),
     )
     .use(bearer())

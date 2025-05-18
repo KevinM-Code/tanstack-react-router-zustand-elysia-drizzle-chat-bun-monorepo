@@ -1,6 +1,8 @@
 import { Elysia, t, Static } from "elysia";
 import db from "../db";
 import auth from "../auth";
+import jwt from "@elysiajs/jwt";
+import { secretSessionKey, verifySessionHash } from "./account";
 
 const tMessage = t.Object({ message: t.String() });
 const tToken = t.Object({ accessToken: t.String() });
@@ -27,47 +29,89 @@ export default function () {
       // body: tpayload,
       // response: t.Object({ name: t.String(), message: t.String() }),
       open: (ws) => {
-        // require authentication from users
-        
-        // if (!ws.data) {
-        //   ws.send({ name: "x", message: "NOT_AUTHENTICATED" });
-        // }
+     
       },
-      message: async (ws, payload) => {
-        console.log("Payload before ", payload)
-          // const { authFromToken } = ws.data.bearer;
+      message: async (ws, payload: any) => {
+        // const { authFromToken } = ws.data.bearer;
 
-          
+        const accessToken = await ws.data.jwt.verify(payload.token); // payload.token 
 
-          // const auth1 = await authFromToken(payload.accessToken);
+        if (accessToken) {
+          // good access token
 
-          // ws.data.auth = auth1;
+          ws.subscribe("global");
+          ws.send({ name: payload.user, message: "AUTHENTICATED", userMessage: payload.msg });
+          ws.publish("global", {
+            name: payload.user,
+            message: payload.msg,
+          });
+          ws.send({ name: payload.user, message: payload.msg });
 
-          if (payload.accessToken) {
+          //return { message: payload.msg }
+        }
+        if (!accessToken) {
+          // refresh access token if session still valid
+
+          const sessionData = {
+            id: payload.id,
+            user: payload.user,
+            timestamp: payload.timestamp,
+          }
+          const sessionHash = {
+            hash: ws.data.cookie.token.value
+          }
+
+          const isVerified = verifySessionHash([sessionData, sessionHash], secretSessionKey)      
+
+          if (isVerified) {
+
+            const newAccessToken = await ws.data.jwt.sign({
+              id: payload.id,
+              user: payload.user,
+              timestamp: payload.timestamp,
+            });
+
             ws.subscribe("global");
-            ws.send({ name: "x", message: "AUTHENTICATED" });
+            ws.send({ name: payload.user, message: "AUTHENTICATED", userMessage: payload.msg });
             ws.publish("global", {
               name: payload.user,
-              message: payload.message,
+              message: payload.msg,
             });
-            ws.send({ name: payload.user, message: payload.message });
-            return;
-          } else {
-            ws.send({ name: "x", message: "TOKEN_INVALID" });
-            return;
+            ws.send({ name: payload.user, message: payload.msg, token: newAccessToken });
+
+            return 
           }
-       
-
-        const { auth } = ws.data;
-
-        if (!auth.isAuthed) {
-          ws.send({ name: "x", message: "NOT_AUTHENTICATED" });
-          return;
         }
 
-       
+        // const auth1 = await authFromToken(payload.accessToken);
+
+        // ws.data.auth = auth1;
+
+        // if (payload.token) {
+        //   ws.subscribe("global");
+        //   ws.send({ name: "x", message: "AUTHENTICATED" });
+        //   ws.publish("global", {
+        //     name: payload.user,
+        //     message: payload.message,
+        //   });
+        //   ws.send({ name: payload.user, message: payload.message });
+        //   return;
+        // } else {
+        //   ws.send({ name: "x", message: "TOKEN_INVALID" });
+        //   return;
+        // }
+
+
+        // const { auth } = ws.data;
+
+        // if (!auth.isAuthed) {
+        //   ws.send({ name: "x", message: "NOT_AUTHENTICATED" });
+        //   return;
+        // }
+
+
         // echo
-        
+
       },
 
       close: () => {

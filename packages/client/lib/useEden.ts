@@ -7,13 +7,13 @@ import { useMemo } from "react";
  */
 export function useEden() {
   // TODO: use the correct url for the hosted app (if deployed/prod)
-  const api = useMemo(() => eden("http://localhost:3000"), []);
+  const api = useMemo(() => eden("http://localhost:3080"), []);
 
   return { api };
 }
 
 export function edenApi() {
-  const api = eden("http://localhost:3000");
+  const api = eden("http://localhost:3080");
 
   return { api };
 }

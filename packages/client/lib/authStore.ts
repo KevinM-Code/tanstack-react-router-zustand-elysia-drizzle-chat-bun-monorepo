@@ -2,13 +2,12 @@ import { create } from "zustand";
 import { edenApi } from "./useEden";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-export type AuthUser = {
-  id: string;
-  name: string;
-};
+
 export type AuthStore = {
   token: string | null;
   user: string | null;
+  id: string | null;
+  timestamp: string | null;
 
   // actions
   isAuthed: () => boolean;
@@ -19,13 +18,15 @@ export type AuthStore = {
 };
 
 export const useAuthStore = create<AuthStore>()(
-  persist(
+  // persist(
     (set, get) => {
       const { api } = edenApi();
 
       return {
         token: null,
+        id: null,
         user: null,
+        timestamp: null,
 
         isAuthed: () => !!get().token,
 
@@ -37,14 +38,17 @@ export const useAuthStore = create<AuthStore>()(
 
           set({ token });
         },
-        logout: () => set({ token: null, user: null }),
+        logout: () => {
+          
+          set({ token: null, user: null, id: null, timestamp: null })
+        },
       };
     },
-    {
-      name: "auth-store",
-      // WARNING: this is NOT secure.
-      // in future we can implement refresh tokens and store them in a httpOnly cookie
-      storage: createJSONStorage(() => localStorage),
-    },
-  ),
+    // {
+    //   name: "auth-store",
+    //   // WARNING: this is NOT secure.
+    //   // in future we can implement refresh tokens and store them in a httpOnly cookie
+    //   storage: createJSONStorage(() => localStorage),
+    // },
+  // ),
 );
